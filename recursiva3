@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Para nombres con espacios 
+# No olvidar regresar a la condicion inicial
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+clear
+CONTADOR=0
+#LISTA=`ls -R $1`
+LISTA=`find $1 -type "f"`
+LISTA2=$LISTA
+
+# Funcion para comparar archivos 
+COMPARA_ARCHIVOS ()
+{
+	A1=`md5sum $1`
+	A2=`md5sum $2`
+	
+	if [ "${A1:0:32}" = "${A2:0:32}" ]; then
+		echo "Archivo '$1' duplicado '$2' >> duplicated.log"
+		# Modificar acciona ante duplicados
+	fi 
+}
+
+# Verifica el numero de parametros recibidos
+if [ $# = 1 ]; then
+	DIRECTORIO=$1
+	# Verifica que se trate de un directorio
+	if [ -d $DIRECTORIO ]; then
+		# Itera entre cada elemento (Archivos) en la lista 1
+		for f in $LISTA; do
+			let CONTADOR=CONTADOR+1
+			# Actualiza la lista					
+			LISTA2=${LISTA2//$f/}  		# Quita elemento actual
+			LONGITUD=${#LISTA2}
+			LISTA2=${LISTA2:1:$LONGITUD}	# Quita residuo (Salto de linea) 
+			
+			if [ -n "$LISTA2" ]; then
+				# echo "-> $CONTADOR: ${#LISTA2} '$LISTA2' "
+				# Comparamos cada archivo de LISTA2 con el archivo actual
+				for i in $LISTA2; do
+					# echo "$f vs $i"
+					COMPARA_ARCHIVOS $f $i
+				done
+			else
+				echo "Proceso terminado"
+			fi						
+		done
+	else
+		echo "El parametro de entrada no es un directorio!"
+	fi
+else
+	echo "El numero de parametros debe ser 1"
+fi
+
+# No omitir -> Para nombres con espacios
+IFS=$SAVEIFS						
+exit $?
+

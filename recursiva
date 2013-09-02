@@ -1,0 +1,26 @@
+#!/bin/bash
+
+clear 
+
+# Inicializo variable
+CONT=20
+
+RECURSIVA ()
+{
+	PARAM1=$1
+  	# Si es mayor o igual a cero
+  	while [ "$PARAM1" -ge 0 ]; do
+    		echo "Llamada a funcion $PARAM1"
+		((PARAM1--))
+
+    		# llamamos a la funcion recursiva con un valor
+    		RECURSIVA "$PARAM1"
+	done
+}
+
+echo "Ejemplo de recursion: "
+#se llama a la funcion funcionRecursiva
+RECURSIVA $CONT
+
+exit $?
+

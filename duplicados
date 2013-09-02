@@ -1,0 +1,146 @@
+#!/bin/bash
+
+# Funcion para comparar archivos 
+COMPARA_ARCHIVOS ()
+{
+	A1=`md5sum $1`
+	A2=`md5sum $2`
+	
+	if [ "${A1:0:32}" = "${A2:0:32}" ]; then		
+		((N_DUPLICADOS++))
+		echo "$N_DUPLICADOS: '$1' ==> '$2'"  >> $LOG_FILE
+		# Solicitar acciona ante duplicados
+		ACCION_DUPLICADOS $1 $2
+		
+	fi 
+}
+
+ACCION_DUPLICADOS ()
+{
+#	echo "Se encontraron los siguientes archivos duplicados: "
+#	echo "1 - $1"
+#	echo "2 - $2"
+#	echo "" 
+#	echo "Elige una de las siguientes acciones:"
+#	echo "	ACCIONES	"
+#	echo ""
+#	read -p "Press [Enter] key to start backup..."
+	# Solicitar acciona ante duplicados
+	# ACCION_DUPLICADOS
+	# 1 - ELIMINAR UNO DE LOS DOS (1 o 2)
+	# 2 - ELIMINAR AMBOS ARCHIVOS 
+	# 3 - CONSERVAR AMBOS (IGNORAR)
+	# 4 - AÑADIR EXCEPCION		
+
+	# Actualiza la lista					
+	# Quita elemento repetido para evitar redundancias	
+#	echo " -> Quitar $2 de:"
+#	echo $LISTA
+	LISTA=${LISTA/$2/}  		# Quita elemento actual
+	LONG=${#LISTA}
+	LISTA=${LISTA:1:$LONG}	# Quita residuo (Salto de linea) 
+#	echo ""
+#	echo $LISTA
+#	echo $TEXT_SEP
+}
+	
+# Funcion que procesa la busqueda
+BUSCA_DUPLICADOS ()
+{
+	DIRECTORIO=$1
+	
+	# Verifica que se trate de un directorio
+	if [ -d $DIRECTORIO ]; then
+		# Itera entre cada elemento (Archivos) en la lista 1
+		for f in $LISTA; do
+			((N_ARCHIVOS++))
+		
+			echo " - $f "
+			
+			# Actualiza la lista					
+			LISTA2=${LISTA2/$f/}  		# Quita elemento actual
+			LONGITUD=${#LISTA2}
+			LISTA2=${LISTA2:1:$LONGITUD}	# Quita residuo (Salto de linea) 
+			
+			if [ -n "$LISTA2" ]; then
+				# echo "-> $CONTADOR: ${#LISTA2} '$LISTA2' "
+				# Comparamos cada archivo de LISTA2 con el archivo actual
+				for i in $LISTA2; do
+					if [ -e $f ] && [ -e $i ]; then
+						COMPARA_ARCHIVOS $f $i
+					fi
+				done
+			else			
+				echo $TEXT_SEP	 >> $LOG_FILE
+				echo " - Archivos duplicados: $N_DUPLICADOS"  >> $LOG_FILE
+				# echo " - Archivos duplicados: $N_DUPLICADOS/$N_ARCHIVOS"  >> $LOG_FILE
+			fi						
+		done
+	else
+		echo "El parametro de entrada no es un directorio!"
+	fi
+}
+
+# ==============================================================================
+
+# Para nombres con espacios 
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+# No olvidar regresar a la condicion inicial
+
+clear
+# Verifica el numero de parametros recibidos
+if [ $# = 1 ]; then	
+	# Verifica que el parametro pasado sea un directorio
+	if [ -d $1 ]; then
+		echo "======================================================================================================================" 
+		echo "Se analizaran todos los elementos en el directorio especificado. El proceso puede tardar, dependiendo del numero total de archivos."
+		echo "======================================================================================================================" 
+		echo " -> Espere por favor... " 
+		DATE=`date +%Y-%m-%d_%H:%M:%S`   
+		DIRECTORIO=`pwd`				# Directorio de trabajo
+		N_ARCHIVOS=0					# Contador de Archivos
+		N_DUPLICADOS=0					# Contador de Archivos duplicados
+		LOG_FILE="duplicados_"$DATE".log"	# Archivo log
+		EXC_FILE="excepciones.log"		# Archivo de excepciones (No implementado)
+		TEXT_SEP="================================================================================"
+	
+		# Si existe archivo "duplicados.log" se borra
+		if [ -e $LOG_FILE ]; then
+			rm -f $LOG_FILE
+		fi
+	
+		# Creando archivo "duplicados.log"
+		touch $LOG_FILE								
+#		echo $LOG_FILE	
+
+		# Cabecera del archivo log
+		echo "Resumen de la operacion ($DATE)" >> $LOG_FILE
+		echo " - Directorio: '$1'" >> $LOG_FILE
+		# ("${#LISTA}" elementos analizados) " 
+
+		echo " -> Analizando archivos... "
+		# Listando Archivos
+		#time (
+		LISTA=`find $1 -type "f"`
+		#) > $LOG_FILE 2>&1
+		LISTA2=$LISTA 	
+		
+		echo $TEXT_SEP >> $LOG_FILE
+		
+		echo " -> Comparando archivos duplicados... "
+		
+		# Inicia el proceso de busqueda
+		BUSCA_DUPLICADOS $1
+	else
+		echo "El parametro recibido no es un directorio.."
+	fi	
+else
+	echo "El numero de parametros debe ser 1"
+fi 
+gedit $LOG_FILE &
+echo " -> Proceso terminado.."
+# No omitir -> Para nombres con espacios
+IFS=$SAVEIFS						
+exit $?
+

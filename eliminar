@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#rm $*
+#ls $*
+echo "TODOS: $* 1: $1"
+
+LISTA=`ls -d $1*`
+PATH=`pwd`
+
+
+# echo "0 $0"
+# echo "PATH $PATH"
+# echo "LISTA: $LISTA"
+
+for i in $LISTA; do
+	if [ -d $i  ]; then		
+		#echo "+ $i es un directorio"	
+		#echo "$PATH - ./eliminar $i/"
+		`./eliminar $i/`	
+	#elif [ -e $i  ]; then
+		#echo "- $i es un fichero"
+	#else
+		#echo "e $i no es ni merga!!"
+	fi
+done
+
+
+

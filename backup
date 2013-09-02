@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Programa para comparar todos los los archivos del
+# directorio actual con los de otro directorio
+
+CONTADOR=0
+DIFER=0
+IGUAL=0
+
+if [ $ -ne 1 ]; then
+	echo "uso : $0 <directorio >"
+	echo "Se comparan uno a uno los archivos del directorio "
+	echo " actual con los del directorio especificado "
+else
+	echo " Comparando los archivos en `pwd`"
+	echo " con los de $1 . . . "
+	echo ""
+	
+	for i in `ls`; do
+		if [ -f $i ]; then
+			diff -qs $i $1/$i
+			if [ $? -eq 0 ]; then
+				let IGUAL=IGUAL+1
+			else
+				let DIFER=DIFER+1
+			fi
+		
+			let CONTADOR=CONTADOR+1
+		fi
+	done
+	
+	echo ""
+	echo "$CONTADOR archivos comparados "
+	echo "$IGUAL iguales "
+	echo "$DIFER diferentes o incomparables "
+fi

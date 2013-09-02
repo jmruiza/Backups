@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Para nombres con espacios 
+# No olvidar regresar a la condicion inicial
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+clear
+
+# Funcion recursiva para listar archivos dentro de archivos
+LISTA_ARCHIVOS ()
+{
+	LISTA=`ls $1`
+	# Listamos los archivos en el directorio
+	for f in $LISTA; do
+		# Verifica si es directorio
+		if [ -d $1$f ]; then
+			LISTA_ARCHIVOS "$1$f/"
+		else
+			for a in $LISTA; do
+				# Si no es el mismo archivo
+				if [ "$1$f" != "$1$a" ] && [ ! -d $1$a ]; then
+					# Verifica que existan ambos archivos										
+					# if [ [ -e $1$f ] || [ -f $1$f ] ] && [ [ -e $2$f ] || [ -f $2$f ] ] ; then
+					if [ ! -d $1$f ] && [ ! -d $2$f ]  ; then
+						echo "$1$f vs $1$a"
+						#COMPARA_ARCHIVOS "$1$f" "$1$a"						
+					fi
+#					
+#			if [ $? -eq 0 ]; then
+#				let IGUAL=IGUAL+1
+#			else
+#				let DIFER=DIFER+1
+#			fi
+#		
+#			let CONTADOR=CONTADOR+1			
+				fi
+	
+			done
+		fi		
+	done	
+}
+
+# Funcion para comparar archivos 
+COMPARA_ARCHIVOS ()
+{
+	A1=`md5sum $1`
+	A2=`md5sum $2`
+	
+	if [ "${A1:0:32}" = "${A2:0:32}" ]; then
+		echo "Son iguales"
+	fi 
+}
+
+# Verifica el numero de parametros recibidos
+if [ $# = 1 ]; then
+	DIRECTORIO=$1
+	# Verifica que se trate de un directorio
+	if [ -d $DIRECTORIO ]; then
+		LISTA_ARCHIVOS "$DIRECTORIO"
+	else
+		echo "El parametro de entrada no es un directorio!"
+	fi
+else
+	echo "El numero de parametros debe ser 1"
+fi
+
+# No omitir -> Para nombres con espacios
+IFS=$SAVEIFS						
+exit $?
+

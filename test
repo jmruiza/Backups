@@ -1,0 +1,85 @@
+#!/bin/bash
+
+time (for i in $(seq 1 5); do
+echo $i;
+#done ) 2>> time.txt 1> salida.txt
+done ) > salida.txt 2>&1
+exit 0
+
+# ==============================================================================
+
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+for f in *; do
+	echo "$f"
+done
+
+IFS=$SAVEIFS
+
+exit 0
+
+lista_archivos(){
+	LISTA=`ls -d $DIRECTORIO*`
+	
+	for i in $LISTA; do
+	if [ -d $i  ]; then		
+		echo "+ $i es un directorio"	
+		DIRECTORIO = $i
+		lista_archivos
+		#echo "$PATH - ./eliminar $i/"
+		#`./eliminar $i/`	
+	elif [ -e $i  ]; then
+		echo "- $i es un fichero"
+	else
+		echo "e $i no es ni merga!!"
+	fi
+done
+}
+
+if [ $# = 1 ]; then
+	DIRECTORIO=$1
+	lista_archivos 
+else
+	echo "Introduce la ruta"
+fi
+
+exit 0
+# ==============================================================================
+
+# numero de recursiones
+numeroRecursiones=20
+
+funcionRecursiva ()
+{
+  # se toma el valor del primer argumento
+  variableBandera="$1"
+  # si es mayor o igual a cero
+  while [ "$variableBandera" -ge 0 ]
+  do
+    # imprimimos el numero de la recursion
+    echo "Valor de la variable  -> $variableBandera"
+    ((variableBandera--))
+    # llamamos a la funcion recursiva con un valor
+    funcionRecursiva "$variableBandera"
+  done
+}
+
+#se llama a la funcion funcionRecursiva
+funcionRecursiva $numeroRecursiones
+
+exit $?
+
+# ==============================================================================
+
+CONT=0;
+echo "Parametros: $#"
+
+if [ $# != 0 ]; then
+
+	for i in $@; do
+		echo "- $i "
+	done
+	
+	# echo "$$ - $!"		
+fi
